@@ -42,19 +42,44 @@ app.get("/weather/:city", async (req, res) => {
 });
 
 // ===== AI CHATBOT =====
+const axios = require("axios");
+
 app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
 
-    // Replace with OpenAI API if needed
-    const reply = `🌾 Based on your query "${message}", apply NPK 20:20:20 fertilizer at 50kg per acre. Ensure proper irrigation.`;
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are an Indian agriculture expert. Suggest fertilizers with quantity per acre."
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ]
+      },
+      {
+        headers: {
+          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
 
-    res.json({ reply });
+    res.json({
+      reply: response.data.choices[0].message.content
+    });
+
   } catch (err) {
-    res.status(500).json({ error: "Chatbot error" });
+    console.log(err.response?.data || err.message);
+    res.status(500).json({ error: "AI failed" });
   }
 });
-
 // ===== IMAGE ANALYSIS =====
 app.post("/analyze", upload.single("image"), async (req, res) => {
   try {
