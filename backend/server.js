@@ -27,14 +27,17 @@ app.get("/weather/:city", async (req, res) => {
     );
 
     res.json({
-      city,
       temperature: response.data.main.temp,
       humidity: response.data.main.humidity,
-      description: response.data.weather[0].description,
-      windSpeed: response.data.wind.speed
+      description: response.data.weather[0].description
     });
+
   } catch (err) {
-    res.status(500).json({ error: "Weather fetch failed" });
+    console.log("Weather Error:", err.response?.data || err.message);
+    res.status(500).json({
+      error: "Weather fetch failed",
+      details: err.response?.data || err.message
+    });
   }
 });
 
